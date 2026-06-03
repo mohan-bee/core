@@ -500,10 +500,18 @@ export class NormalComponent<
     return null
   }
 
+  // Override to choose the effective footprint without rewriting user props.
+  resolveFootprint() {
+    return (
+      this._parsedProps.footprint ??
+      this.props.footprint ??
+      this._getImpliedFootprintString?.()
+    )
+  }
+
   _addChildrenFromStringFootprint() {
     const { pcbRotation, pinLabels, pcbPinLabels } = this.props
-    let footprint = this._parsedProps.footprint ?? this.props.footprint
-    footprint ??= this._getImpliedFootprintString?.()
+    const footprint = this.resolveFootprint()
     if (!footprint) return
 
     if (typeof footprint === "string") {
