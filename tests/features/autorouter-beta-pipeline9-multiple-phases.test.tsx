@@ -1,4 +1,5 @@
 import { expect, test } from "bun:test"
+import type { SolverStartedEvent } from "lib/events"
 import type {
   SimpleRouteJson,
   SimplifiedPcbTrace,
@@ -25,9 +26,14 @@ const routeConnectionsDirectly = async (
     }),
   )
 
-test("beta_pipeline9 routes a later phase around preloaded traces", async () => {
+test("auto selects pipeline9 for a later phase with preloaded traces", async () => {
   const { circuit } = getTestFixture()
   const autoroutingPhaseIoStack = createAutoroutingPhaseIoStack(circuit)
+  const solverStartedNames: string[] = []
+
+  circuit.on("solver:started", (event: SolverStartedEvent) => {
+    solverStartedNames.push(event.solverName)
+  })
 
   circuit.add(
     <board
@@ -49,7 +55,7 @@ test("beta_pipeline9 routes a later phase around preloaded traces", async () => 
           algorithmFn: createBasicAutorouter(routeConnectionsDirectly),
         }}
       />
-      <autoroutingphase phaseIndex={1} autorouter="beta_pipeline9" />
+      <autoroutingphase phaseIndex={1} autorouter="auto" />
 
       <resistor
         name="R1"
@@ -142,7 +148,7 @@ test("beta_pipeline9 routes a later phase around preloaded traces", async () => 
         pcbX={0}
         pcbY={-7}
         fontSize={0.45}
-        text="Pipeline9 phase 1 routes around preloaded phase 0 traces"
+        text="Auto selects Pipeline9 for preloaded phase 1 traces"
       />
     </board>,
   )
@@ -164,6 +170,12 @@ test("beta_pipeline9 routes a later phase around preloaded traces", async () => 
   expect(pcbTraces).toHaveLength(4)
   expect(new Set(pcbTraces.map((trace) => trace.pcb_trace_id)).size).toBe(4)
   expect(circuit.db.pcb_via.list().length).toBeGreaterThanOrEqual(4)
+  expect(solverStartedNames).toContain(
+    "AutoroutingPipelineSolver9_PreloadedTraceGraph",
+  )
+  expect(solverStartedNames).not.toContain(
+    "AutoroutingPipelineSolver7_MultiGraph",
+  )
 
   expect(circuit).toMatchPcbSnapshot(import.meta.path, {
     diffThresholdPercent: 2,

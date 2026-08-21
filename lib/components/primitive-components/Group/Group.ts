@@ -1047,6 +1047,9 @@ export class Group<Props extends z.ZodType<any, any, any> = typeof groupProps>
     const hasFanoutStage = routingStages.some(({ autorouterConfig }) =>
       ["fanout", "single_layer_fanout"].includes(autorouterConfig.preset ?? ""),
     )
+    const hasBreakoutRoutingStage = routingStages.some(
+      ({ routingPhasePlan }) => routingPhasePlan.routingPcbGroupId !== undefined,
+    )
     const fanoutPourNetMap = hasFanoutStage
       ? Group_getFanoutPourNetMap(this, routingPhasePlans)
       : undefined
@@ -1350,6 +1353,11 @@ export class Group<Props extends z.ZodType<any, any, any> = typeof groupProps>
                 phaseIsLaserPrefabPreset || isSingleLayerBoard,
               useAutoJumperSolver: phaseIsAutoJumperPreset,
               useLaserPrefabSolver: phaseIsLaserPrefabPreset,
+              usePreloadedTraceSolver:
+                !usesPreviousStageOutput &&
+                !isReroutePhase &&
+                !hasBreakoutRoutingStage &&
+                outputTraces.length > 0,
               autorouterVersion,
               effort,
             }

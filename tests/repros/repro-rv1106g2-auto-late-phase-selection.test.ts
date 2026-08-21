@@ -35,7 +35,7 @@ const createSnapshotTitleSvg = (title: string) => `<svg
   >${title}</text>
 </svg>`
 
-test("reproduces RV1106G2 auto selecting pipeline7 for a late phase with preloaded traces", async () => {
+test("RV1106G2 auto selects pipeline9 for a late phase with preloaded traces", async () => {
   const simpleRouteJson = rv1106g2LatePhaseSrj as SimpleRouteJson &
     CapacityAutorouterSimpleRouteJson
   const autoAutorouterConfig = getPresetAutoroutingConfig("auto")
@@ -43,6 +43,7 @@ test("reproduces RV1106G2 auto selecting pipeline7 for a late phase with preload
 
   new TscircuitAutorouter(simpleRouteJson, {
     autorouterVersion: autoAutorouterConfig.autorouterVersion,
+    usePreloadedTraceSolver: true,
     onSolverStarted: (solverDetails) => {
       solverName = solverDetails.solverName
     },
@@ -52,9 +53,7 @@ test("reproduces RV1106G2 auto selecting pipeline7 for a late phase with preload
   expect(simpleRouteJson.obstacles).toHaveLength(LATE_PHASE_OBSTACLE_COUNT)
   expect(simpleRouteJson.traces).toHaveLength(PRELOADED_TRACE_COUNT)
 
-  // This is the reproduced bug: the exact input exhausts Pipeline7, while
-  // beta_pipeline9 solves all four remaining connections around these traces.
-  expect(solverName).toBe("AutoroutingPipelineSolver7_MultiGraph")
+  expect(solverName).toBe("AutoroutingPipelineSolver9_PreloadedTraceGraph")
 
   const simpleRouteJsonSvg = getSvgFromGraphicsObject(
     convertSrjToGraphicsObject(simpleRouteJson),
@@ -68,7 +67,7 @@ test("reproduces RV1106G2 auto selecting pipeline7 for a late phase with preload
   const snapshotSvg = stackSvgsVertically(
     [
       createSnapshotTitleSvg(
-        "RV1106G2 LATE PHASE: AUTO SELECTS PIPELINE7 WITH 205 PRELOADED TRACES",
+        "RV1106G2 LATE PHASE: AUTO SELECTS PIPELINE9 WITH 205 PRELOADED TRACES",
       ),
       simpleRouteJsonSvg,
     ],

@@ -45,6 +45,7 @@ export interface AutorouterOptions {
   useAssignableSolver?: boolean
   useAutoJumperSolver?: boolean
   useLaserPrefabSolver?: boolean
+  usePreloadedTraceSolver?: boolean
   autorouterVersion?: AutorouterVersion
   effort?: number
   platformConfig?: Pick<PlatformConfig, "localCacheEngine">
@@ -95,6 +96,7 @@ export class TscircuitAutorouter implements GenericLocalAutorouter {
       useAutoJumperSolver = false,
       autorouterVersion,
       useLaserPrefabSolver = false,
+      usePreloadedTraceSolver = false,
       effort,
       platformConfig,
       onSolverStarted,
@@ -123,6 +125,8 @@ export class TscircuitAutorouter implements GenericLocalAutorouter {
       solverName = "AssignableAutoroutingPipeline3"
     } else if (useAssignableSolver) {
       solverName = "AssignableAutoroutingPipeline2"
+    } else if (usePreloadedTraceSolver) {
+      solverName = "AutoroutingPipelineSolver9_PreloadedTraceGraph"
     } else {
       solverName = "AutoroutingPipelineSolver7_MultiGraph"
     }
